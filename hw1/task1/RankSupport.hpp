@@ -10,7 +10,7 @@ using namespace sdsl;
 
 class RankSupport {
     public:
-        RankSupport(bit_vector *b);
+        RankSupport(bit_vector *b, bool debug = false);
         uint64_t rank1(uint64_t i);
         uint64_t overhead();
         void save(string& fname);
@@ -19,13 +19,14 @@ class RankSupport {
         bit_vector to_bitvector(uint64_t i);
 
     private:
+        bool debug;
         bit_vector *b;
         uint64_t sb_size;
         uint64_t block_size;
         uint64_t table_size;
         vector<bit_vector> superblocks;
         vector<bit_vector> blocks;
-        vector<bit_vector> tables;
+        vector<vector<bit_vector>> tables;
         void fill_superblocks();
         void fill_blocks();
         void fill_tables();

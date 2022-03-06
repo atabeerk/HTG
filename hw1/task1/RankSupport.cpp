@@ -1,9 +1,9 @@
 #include "RankSupport.hpp"
 #include <iostream>
 
-RankSupport::RankSupport(bit_vector *b){
+RankSupport::RankSupport(bit_vector *b, bool debug){
+    this-> debug = debug;
     this->b = b;
-
     uint64_t n = (*b).size();
 
     /* set this early as superblock size is based on this */
@@ -27,11 +27,13 @@ RankSupport::RankSupport(bit_vector *b){
     /* fill superblocks with correct rank values */
     fill_superblocks();
 
-    cout << "printing information about " << (*b) << " with length " << (*b).size() << endl;
-    cout << "\t" << n_sb << " superblocks, each with size " << sb_size << endl;
-    cout << "\tcontents of superblocks are:" << endl;
-    for (bit_vector sb : superblocks){
-        cout << "\t\t" << sb << endl;
+    if (debug) {
+        cout << "printing information about " << (*b) << " with length " << (*b).size() << endl;
+        cout << "\t" << n_sb << " superblocks, each with size " << sb_size << endl;
+        cout << "\tcontents of superblocks are:" << endl;
+        for (bit_vector sb : superblocks){
+            cout << "\t\t" << sb << endl;
+        }
     }
 
     /*** HANDLE BLOCKS ***/
@@ -45,26 +47,37 @@ RankSupport::RankSupport(bit_vector *b){
     /* fill superblocks with correct rank values */
     fill_blocks();
 
-    cout << "\t" << n_b << " blocks, each with size " << block_size << endl;
-    cout << "\tcontents of blocks are:" << endl;
-    for (bit_vector b : blocks){
-        cout << "\t\t" << b << endl;
+    if (debug) {
+        cout << "\t" << n_b << " blocks, each with size " << block_size << endl;
+        cout << "\tcontents of blocks are:" << endl;
+        for (bit_vector b : blocks){
+            cout << "\t\t" << b << endl;
+        }
     }
 
     /*** HANDLE TABLES ***/
     table_size = block_size;
     uint64_t n_table = n_b;
     for (uint64_t i = 0; i < n_table; i++) {
-        tables.push_back(bit_vector(table_size, 0));
+        vector<bit_vector> tmp;
+        tables.push_back(tmp);
+        for (uint64_t j = 0; j < table_size; j++){
+            tables[i].push_back(bit_vector(table_size, 0));
+        }
     }
-    fill_tables();
-    cout << "\t" << n_table << " tables, each with size " << table_size << endl;
-    cout << "\tcontents of tables are:" << endl;
-    for (bit_vector t : tables){
-        cout << "\t\t" << t << endl;
-    }
-    cout << "*****" << endl << endl;
 
+    fill_tables();
+    if (debug) {
+        cout << "\t" << n_table << " tables, each with size " << table_size << endl;
+        cout << "\tcontents of tables are:" << endl;
+        for (uint64_t i = 0; i < tables.size(); i++){
+            cout << "\t\t table " << i << endl;
+            for (bit_vector t : tables[i]) {
+                cout << "\t\t\t" << t << endl;
+            }
+        }
+        cout << "*****" << endl << endl;
+    }
 
 }
 
@@ -138,48 +151,41 @@ void RankSupport::fill_blocks() {
 
 void RankSupport::fill_tables() {
     /* A bit different than other two fill functions. This time we need the position information as well */
-
+    /* Fill in 2-d tables that store number of 1's in the current block up until the current cell */
     for (uint64_t table_index = 0; table_index < tables.size(); table_index++) {
         /* store which bits are one in a bit_vector */
-        bit_vector bv = bit_vector(table_size, 0);
+        uint64_t counter = 0;
         for (uint64_t i = 0; i < table_size; i++) {
 
-            /* Jump to start of the current table */
+            /* Jump to the start of the current table */
             uint64_t true_index = i + (table_index * table_size);
             if ((*b)[true_index] == 1) {
-                bv[i] = 1;
+                counter++;
             }
+        tables[table_index][i] = to_bitvector(counter);
         }
-        tables[table_index] = bv;
     }
-
 }
 
 
 uint64_t RankSupport::rank1(uint64_t i) {
-    /* superblock value + block value + popcount */
+    /* superblock value + block value + table_value */
     bit_vector superblock = superblocks[i / sb_size];
     bit_vector block = blocks[i / block_size];
-    bit_vector table = tables[i / table_size];
+    vector<bit_vector> table = tables[i / table_size];
 
     uint64_t block_start = ((i / block_size) * block_size);
     uint64_t table_index = (i - block_start);
 
-//    cout << "i: " << i << endl;
-//    cout << "sb rank: " << superblock << endl;
-//    cout << "block rank: " << block << endl;
-//    cout << "table content: " << table << endl;
-//    cout << "table index: " << table_index << endl;
-
-    /* Is the following considered O(1) because the table is super small? */
-    /* get the value from the table for the corresponding table index */
-    uint64_t true_table_rank = 0;
-    for (uint64_t j = 0; j < table_index + 1; j++) {
-        if (table[j] == 1) {
-            true_table_rank++;
-        }
+    if (debug) {
+        cout << "i: " << i << endl;
+        cout << "sb rank: " << superblock << endl;
+        cout << "block rank: " << block << endl;
+        cout << "table content: " << table[table_index] << endl;
+        cout << "table index: " << table_index << endl;
     }
-    return to_decimal(&superblock) + to_decimal(&block) + true_table_rank;
+
+    return to_decimal(&superblock) + to_decimal(&block) + to_decimal(&table[table_index]);
 }
 
 
