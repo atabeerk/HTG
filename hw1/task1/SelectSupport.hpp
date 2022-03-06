@@ -7,6 +7,7 @@
 
 class SelectSupport {
     public:
+        SelectSupport();
         SelectSupport(RankSupport *r);
         uint64_t select1(uint64_t i);
         uint64_t overhead();

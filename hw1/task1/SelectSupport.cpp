@@ -1,8 +1,12 @@
 #include "SelectSupport.hpp"
 
+SelectSupport::SelectSupport() {
+
+}
+
 SelectSupport::SelectSupport(RankSupport *r) {
     this->r = r;
-    this->size = r->get_size();
+    this->size = r->size();
 }
 
 

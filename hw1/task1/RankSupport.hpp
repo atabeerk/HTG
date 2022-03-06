@@ -12,12 +12,13 @@ using namespace sdsl;
 
 class RankSupport {
     public:
+        RankSupport();
         RankSupport(bit_vector *b, bool debug = false);
         uint64_t rank1(uint64_t i);
         uint64_t overhead();
         void save(string& fname);
         void load(string& fname);
-        uint64_t get_size();
+        uint64_t size();
         uint64_t to_decimal(bit_vector *b);
         bit_vector to_bitvector(uint64_t i);
 

@@ -2,6 +2,10 @@
 #include <iostream>
 #include <cmath>
 
+RankSupport::RankSupport() {
+
+}
+
 RankSupport::RankSupport(bit_vector *b, bool debug){
     this-> debug = debug;
     this->b = b;
@@ -211,7 +215,7 @@ void RankSupport::load(string& fname) {
 }
 
 
-uint64_t RankSupport::get_size() {
+uint64_t RankSupport::size() {
     return (*b).size();
 }
 
