@@ -1,5 +1,6 @@
 #include "RankSupport.hpp"
 #include <iostream>
+#include <cmath>
 
 RankSupport::RankSupport(bit_vector *b, bool debug){
     this-> debug = debug;
@@ -169,6 +170,7 @@ void RankSupport::fill_tables() {
 
 
 uint64_t RankSupport::rank1(uint64_t i) {
+    /* 0 indexing */
     /* superblock value + block value + table_value */
     bit_vector superblock = superblocks[i / sb_size];
     bit_vector block = blocks[i / block_size];
@@ -206,6 +208,11 @@ void RankSupport::save(string& fname) {
 
 void RankSupport::load(string& fname) {
     return;
+}
+
+
+uint64_t RankSupport::get_size() {
+    return (*b).size();
 }
 
 /*** AUXILIARY FUNCTIONS ***/
