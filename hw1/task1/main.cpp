@@ -9,54 +9,105 @@
 
 using namespace std::chrono;
 
-
-void rank_experiments(char experiment) {
-    vector<bit_vector> bv_vector;
-    vector <RankSupport> rs_vector;
-
-    cout << "Printing rank overhead:" << endl;
+void sparse_array_experiments() {
+    SparseArray sa;
+    double sparsity = 0.01; // change this value to create arrays with different sparsity
+    vector<duration<double, std::milli>> get_rank_times;
+    vector<duration<double, std::milli>> get_index_times;
     for (uint64_t i = 0; i < 30; i++) {
-        bv_vector.push_back(bit_vector(15000 + (5000 * i), 0));
-        for (uint64_t j = 0; j < bv_vector[i].size(); j += bv_vector[i].size() / 100) {
-            bv_vector[i][j] = 1;
+        /* Create a sparse array with different size and sparsity each time */
+        uint64_t size = 15000 + (5000 * i);
+        sa.create(size);
+        for (uint64_t j = 0; j < size; j += size * sparsity) {
+            sa.append("foo", j);
         }
-        rs_vector.push_back(RankSupport(&bv_vector[i]));
-        cout << rs_vector[i].overhead() << ", ";
+        string s;
+
+        cout << "Starting get at rank experiments" << endl;
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
+        /* For a single array run 100 get_at_rank experiments */
+        for (uint64_t j = 1; j < size; j += size / 100) {
+            sa.get_at_rank(j, s);
+        }
+        /* For a single array run 100 get_at_index experiments */
+        cout << "get at rank experiments finished" << endl;
+        high_resolution_clock::time_point t2 = high_resolution_clock::now();
+        duration<double, std::milli> time_span = t2 - t1;
+        get_rank_times.push_back(time_span);
+
+        cout << "Starting get at index experiments" << endl;
+        t1 = high_resolution_clock::now();
+        for (uint64_t j = 1; j < size * sparsity; j += size * sparsity / 100) {
+            sa.get_at_index(j, s);
+        }
+        t2 = high_resolution_clock::now();
+        time_span = t2 - t1;
+        get_index_times.push_back(time_span);
+        cout << "get at index experiments finished" << endl;
+    }
+    cout << "Printing get_at_rank times: " << endl;
+    for (auto t : get_rank_times) {
+        cout << t.count() << ", ";
+    }
+    cout << endl << "Printing get_at_index times: " << endl;
+    for (auto t : get_index_times) {
+        cout << t.count() << ", ";
+    }
+
+}
+
+void rank_select_experiments(char experiment) {
+    vector<uint64_t> overheads;
+    vector<duration<double, std::milli>> times;
+    for (uint64_t i = 0; i < 30; i++) {
+        /* Create bit_vectors of varying size (15k to 165k)*/
+        bit_vector bv = bit_vector(15000 + (5000 * i));
+        for (uint64_t j = 0; j < bv.size(); j += bv.size() / 100) {
+            bv[j] = 1;
+        }
+
+        RankSupport rs = RankSupport(&bv);
+        overheads.push_back(rs.overhead());
+
+        /* Rank experiments */
+        if (experiment == 'R') {
+            high_resolution_clock::time_point t1 = high_resolution_clock::now();
+            /* Run 100 rank1 experiments with different rank values */
+            for (uint64_t k = 0; k < bv.size(); k += bv.size() / 100) {
+                rs.rank1(k);
+            }
+            high_resolution_clock::time_point t2 = high_resolution_clock::now();
+            duration<double, std::milli> time_span = t2 - t1;
+            times.push_back(time_span);
+        }
+
+        /* Select experiments */
+        else if (experiment == 'S') {
+            SelectSupport ss = SelectSupport(&rs);
+            /* Store the overhead */
+            overheads.push_back(ss.overhead());
+            high_resolution_clock::time_point t1 = high_resolution_clock::now(); // start time
+            /* Run 100 select1 experiments with different rank values */
+            for (uint64_t k = 5; k < 75; k += 5) {
+                ss.select1(k);
+            }
+            high_resolution_clock::time_point t2 = high_resolution_clock::now(); // end time
+            duration<double, std::milli> time_span = t2 - t1; // time difference
+            times.push_back(time_span);
+        }
+    }
+
+    /* Print the results */
+    cout <<"Printing overheads:" << endl;
+    for (auto o : overheads) {
+        cout << o << ", ";
     }
     cout << endl;
-    cout << "Test vectors created" << endl;
-
-    if (experiment == 'R') {
-        cout << "Printing rank1 times:" << endl;
-        for (uint64_t i = 0; i < rs_vector.size(); i++) {
-            // start timer here
-            high_resolution_clock::time_point t1 = high_resolution_clock::now();
-            for (uint64_t j = 0; j < rs_vector[i].size(); j += bv_vector[i].size() / 100) {
-                rs_vector[i].rank1(j);
-            }
-            high_resolution_clock::time_point t2 = high_resolution_clock::now();
-            duration<double, std::milli> time_span = t2 - t1;
-            cout << time_span.count() << ", ";
-        }
-        cout << endl;
+    cout << "Printing times:" << endl;
+    for (auto t : times) {
+        cout << t.count() << ", ";
     }
-    else if (experiment == 'S') {
-        cout << "Printing select1 times:" << endl;
-        vector <SelectSupport> ss_vector;
-        for (uint64_t i = 0; i < rs_vector.size(); i++) {
-            RankSupport rs = rs_vector[i];
-            ss_vector.push_back(SelectSupport(&rs));
-            high_resolution_clock::time_point t1 = high_resolution_clock::now();
-            for (uint64_t j = 5; j < 50; j += 1) {
-                cout << bv_vector[i].size() << endl;
-                auto x = ss_vector[i];
-                x.select1(j);
-            }
-            high_resolution_clock::time_point t2 = high_resolution_clock::now();
-            duration<double, std::milli> time_span = t2 - t1;
-            cout << time_span.count() << ", ";
-        }
-    }
+    cout << endl;
 }
 
 
@@ -146,5 +197,6 @@ int main()
 //    for (int i = 1; i < 50; i++) {
 //        big_ss.select1(i);
 //    }
-    rank_experiments('S');
+    //rank_select_experiments('S');
+    sparse_array_experiments();
 }
