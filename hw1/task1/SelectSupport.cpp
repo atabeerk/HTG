@@ -39,9 +39,11 @@ uint64_t SelectSupport::bsearch(uint64_t rank, uint64_t index, uint64_t start, u
             return bsearch(rank, (start + index) / 2, start, index);
         }
     }
+    /* continue with the right part */
     else if (current_rank < rank) {
         return bsearch(rank, (index + end) / 2, index, end);
     }
+    /* continue with the left part */
     else {
         return bsearch(rank, (start + index) / 2, start, index);
     }
@@ -49,6 +51,7 @@ uint64_t SelectSupport::bsearch(uint64_t rank, uint64_t index, uint64_t start, u
 
 
 uint64_t SelectSupport::overhead() {
+    /* SelectSupport class does not contain data structures other than the RankSupport*/
     return r->overhead();
 }
 

@@ -13,9 +13,11 @@ void SparseArray::create(uint64_t size) {
 
 
 void SparseArray::append(string elem, uint64_t pos) {
+    /* put the elem in values array and set the corresponding bit in the sparse_bitvector */
     values.push_back(elem);
     sparse_bitvector[pos] = 1;
-    /* Need to reinitialize rs and ss after each append */
+
+    /* Need to reconstruct rs and ss after each append */
     rs = RankSupport(&sparse_bitvector);
     ss = SelectSupport(&rs);
 }
@@ -34,6 +36,7 @@ bool SparseArray::get_at_rank(uint64_t r, string& elem) {
 bool SparseArray::get_at_index(uint64_t r, string& elem) {
     bool bit = sparse_bitvector[r];
     if (!bit) {
+        /* If the bit is 0, simply return false */
         return false;
     }
     /* find the index in values vector corresponding to r in bit_vector */
