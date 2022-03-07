@@ -12,6 +12,10 @@ SelectSupport::SelectSupport(RankSupport *r) {
 
 uint64_t SelectSupport::select1(uint64_t i) {
     /* 0 indexing */
+    if (i == 0) {
+        cout << "INVALID INPUT" << endl;
+        return 0;
+    }
     return bsearch(i, size / 2, 0, size - 1);
 
 }

@@ -174,6 +174,10 @@ void RankSupport::fill_tables() {
 
 
 uint64_t RankSupport::rank1(uint64_t i) {
+    /* if i > size() returns rank of the last element */
+    if (i > size()) {
+        i = size() - 1;
+    }
     /* 0 indexing */
     /* superblock value + block value + table_value */
     bit_vector superblock = superblocks[i / sb_size];

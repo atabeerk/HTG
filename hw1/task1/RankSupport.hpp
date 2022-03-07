@@ -23,7 +23,7 @@ class RankSupport {
         bit_vector to_bitvector(uint64_t i);
 
     private:
-        bool debug;
+        bool debug = false;
         bit_vector *b;
         uint64_t sb_size;
         uint64_t block_size;
