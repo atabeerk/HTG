@@ -1,14 +1,28 @@
 #include "RankSupport.hpp"
 #include <iostream>
 #include <cmath>
+#include <fstream>
+
 
 RankSupport::RankSupport() {
-
+    // default constructor
 }
 
 RankSupport::RankSupport(bit_vector *b, bool debug){
     this-> debug = debug;
     this->b = b;
+    create_data_structures(b, debug);
+}
+
+
+void RankSupport::create_data_structures(bit_vector *b, bool debug) {
+
+    this->b = b;
+    /* Reset the data structures */
+    superblocks = vector<bit_vector>();
+    blocks = vector<bit_vector>();
+    tables = vector<vector<bit_vector>>();
+
     uint64_t n = (*b).size();
 
     /* set this early as superblock size is based on this */
@@ -85,6 +99,7 @@ RankSupport::RankSupport(bit_vector *b, bool debug){
     }
 
 }
+
 
 void RankSupport::fill_superblocks() {
     uint64_t rank_so_far = 0; // initially 0
@@ -210,12 +225,19 @@ uint64_t RankSupport::overhead() {
 
 
 void RankSupport::save(string& fname) {
-    return;
+     store_to_file((*b), fname);
+//    ofstream file;
+//    file.open(fname);
+//    (superblocks).serialize(file);
+//    (blocks).serialize(file);
+//    (tables).serialize(file);
+
 }
 
 
 void RankSupport::load(string& fname) {
-    return;
+    load_from_file(*b, fname);
+    create_data_structures(b, true);
 }
 
 

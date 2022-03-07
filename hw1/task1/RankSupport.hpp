@@ -31,6 +31,7 @@ class RankSupport {
         vector<bit_vector> superblocks;
         vector<bit_vector> blocks;
         vector<vector<bit_vector>> tables;
+        void create_data_structures(bit_vector *b, bool debug);
         void fill_superblocks();
         void fill_blocks();
         void fill_tables();

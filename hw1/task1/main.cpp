@@ -132,16 +132,34 @@ int main()
 //    uint64_t d2 = 57;
 //    uint64_t d3 = 5;
 //    bit_vector bv = {1, 1, 1, 1, 1, 1, 1};
-//    cout << endl << "****************" << endl;
-//    bit_vector bv1 = {1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0};
-//    bit_vector bv2 = {1,0,1,1,0,1,0,1,0,0,1,1,0,0,1,1};
-//    bit_vector bv3 = {1,1,0,0,1,1,0,0,1,1,1,0,1,1,0,1,0,0,0,1,1,1,0,1,0,1,0,0,1,0,1,0};
-//    bit_vector bv4 = {1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0 ,1 ,0};
-//
-//    RankSupport rs1 = RankSupport(&bv1);
-//    RankSupport rs2 = RankSupport(&bv2);
-//    RankSupport rs3 = RankSupport(&bv3);
-//    RankSupport rs4 = RankSupport(&bv4);
+    cout << endl << "****************" << endl;
+    bit_vector bv1 = {1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0};
+    bit_vector bv2 = {1,0,1,1,0,1,0,1,0,0,1,1,0,0,1,1};
+    bit_vector bv3 = {1,1,0,0,1,1,0,0,1,1,1,0,1,1,0,1,0,0,0,1,1,1,0,1,0,1,0,0,1,0,1,0};
+    bit_vector bv4 = {1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0 ,1 ,0};
+
+    RankSupport rs1 = RankSupport(&bv1);
+    RankSupport rs2 = RankSupport(&bv2);
+    RankSupport rs3 = RankSupport(&bv3);
+    RankSupport rs4 = RankSupport(&bv4);
+
+    string fname = "rs1.rs";
+
+    //rs1.save(fname);
+    //rs2.load(fname);
+
+    SelectSupport ss1 = SelectSupport(&rs1);
+    SelectSupport ss2 = SelectSupport(&rs2);
+    SelectSupport ss3 = SelectSupport(&rs3);
+    SelectSupport ss4 = SelectSupport(&rs4);
+
+    fname = "ss1.rs";
+
+    ss1.save(fname);
+    ss2.load(fname);
+
+    int select_value = 3;
+    cout << ss1.select1(select_value) << " " << ss2.select1(select_value)  << endl;
 
 //    for (uint64_t c = 1; c < 10; c++) {
 //        time_t start_time;
@@ -197,6 +215,7 @@ int main()
 //    for (int i = 1; i < 50; i++) {
 //        big_ss.select1(i);
 //    }
-    //rank_select_experiments('S');
-    sparse_array_experiments();
+    // rank_select_experiments('S');
+    // sparse_array_experiments();
+
 }

@@ -57,10 +57,11 @@ uint64_t SelectSupport::overhead() {
 
 
 void SelectSupport::save(string& fname) {
-    return;
+    r->save(fname);
 }
 
 
 void SelectSupport::load(string& fname) {
-    return;
+    r->load(fname);
+    size = r->size();
 }
