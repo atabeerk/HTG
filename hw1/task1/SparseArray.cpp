@@ -34,6 +34,10 @@ bool SparseArray::get_at_rank(uint64_t r, string& elem) {
 
 
 bool SparseArray::get_at_index(uint64_t r, string& elem) {
+    if (r > sparse_bitvector.size()) {
+        cout << "r is out of bounds" << endl;
+        return false;
+    }
     bool bit = sparse_bitvector[r];
     if (!bit) {
         /* If the bit is 0, simply return false */
@@ -55,10 +59,13 @@ uint64_t SparseArray::num_elem_at(uint64_t r) {
 
 uint64_t SparseArray::size() {
     uint64_t values_size = 0;
+    uint64_t c = 0;
     for (string s : values) {
-        values_size = sizeof(char) * s.length();
+        values_size += sizeof(char) * s.length() * 8;
+        c++;
     }
-    return sparse_bitvector.size() + values_size + rs.overhead() + ss.overhead();
+    /* Not including size of the SelecSupport as it stores a pointer to RankSupport */
+    return values_size + rs.overhead();
 }
 
 

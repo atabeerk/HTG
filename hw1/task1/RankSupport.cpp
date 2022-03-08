@@ -215,12 +215,20 @@ uint64_t RankSupport::rank1(uint64_t i) {
 
 
 uint64_t RankSupport::overhead() {
-    uint64_t sb_overhead = 0, block_overhead = 0, table_overhead = 0;
-    /* all of these data structures store bit_vectors so: n_bitvectors * bitvector_size */
-    sb_overhead = superblocks.size() * sb_size;
-    block_overhead = blocks.size() * block_size;
-    table_overhead = tables.size() * table_size;
-    return sb_overhead + block_overhead + table_overhead;
+    double sb_overhead = 0, block_overhead = 0, table_overhead = 0;
+    /* all of these data structures store bit_vectors so use sdsl function to get size of bit_vectors */
+    for (bit_vector sb : superblocks) {
+        sb_overhead += size_in_mega_bytes(sb);
+    }
+    for (bit_vector b : blocks) {
+        block_overhead += size_in_mega_bytes(b);
+    }
+    for (vector<bit_vector> t : tables) {
+        for (bit_vector p : t) {
+            table_overhead += size_in_mega_bytes(p);
+        }
+    }
+    return (sb_overhead + block_overhead + table_overhead) * 1000 * 1000;
 }
 
 
@@ -237,7 +245,7 @@ void RankSupport::save(string& fname) {
 
 void RankSupport::load(string& fname) {
     load_from_file(*b, fname);
-    create_data_structures(b, true);
+    create_data_structures(b, false);
 }
 
 

@@ -9,41 +9,50 @@
 
 using namespace std::chrono;
 
-void sparse_array_experiments() {
+void sparse_array_experiments(double sparsity) {
     SparseArray sa;
-    double sparsity = 0.01; // change this value to create arrays with different sparsity
+    cout << "sparsity: " << sparsity << endl;
     vector<duration<double, std::milli>> get_rank_times;
     vector<duration<double, std::milli>> get_index_times;
-    for (uint64_t i = 0; i < 30; i++) {
+    vector<uint64_t> sizes;
+    for (uint64_t i = 1; i < 11; i++) {
         /* Create a sparse array with different size and sparsity each time */
-        uint64_t size = 15000 + (5000 * i);
+        uint64_t size = 100000 * i;
         sa.create(size);
-        for (uint64_t j = 0; j < size; j += size * sparsity) {
+        cout << "starting experiments for size: " << size << endl;
+        for (uint64_t j = 0; j < size; j +=  1 / sparsity) {
+//            if ( j % 10000 == 0) {
+//                cout << j << endl;
+//            }
             sa.append("foo", j);
         }
         string s;
 
-        cout << "Starting get at rank experiments" << endl;
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
-        /* For a single array run 100 get_at_rank experiments */
-        for (uint64_t j = 1; j < size; j += size / 100) {
+        /* For a single array, run 100 get_at_rank experiments */
+        int c = 0;
+        for (uint64_t j = 1; j < size * sparsity; j += (size * sparsity) / 100) {
+            c++;
             sa.get_at_rank(j, s);
         }
-        /* For a single array run 100 get_at_index experiments */
-        cout << "get at rank experiments finished" << endl;
+        cout << c << " get_at_rank experiments run" << endl;
+        /* For a single array, run 100 get_at_index experiments */
         high_resolution_clock::time_point t2 = high_resolution_clock::now();
         duration<double, std::milli> time_span = t2 - t1;
         get_rank_times.push_back(time_span);
 
-        cout << "Starting get at index experiments" << endl;
         t1 = high_resolution_clock::now();
-        for (uint64_t j = 1; j < size * sparsity; j += size * sparsity / 100) {
+        c = 0;
+        for (uint64_t j = 1; j < size; j += size / 100) {
+            c++;
             sa.get_at_index(j, s);
         }
+        cout << c << " get_at_index experiments run" << endl;
         t2 = high_resolution_clock::now();
         time_span = t2 - t1;
         get_index_times.push_back(time_span);
-        cout << "get at index experiments finished" << endl;
+
+        sizes.push_back(sa.size());
     }
     cout << "Printing get_at_rank times: " << endl;
     for (auto t : get_rank_times) {
@@ -52,6 +61,10 @@ void sparse_array_experiments() {
     cout << endl << "Printing get_at_index times: " << endl;
     for (auto t : get_index_times) {
         cout << t.count() << ", ";
+    }
+    cout << endl << "Printing sizes: " << endl;
+    for (auto s : sizes) {
+        cout << s << ", ";
     }
 
 }
@@ -67,7 +80,6 @@ void rank_select_experiments(char experiment) {
         }
 
         RankSupport rs = RankSupport(&bv);
-        overheads.push_back(rs.overhead());
 
         /* Rank experiments */
         if (experiment == 'R') {
@@ -113,25 +125,18 @@ void rank_select_experiments(char experiment) {
 
 int main()
 {
-    bit_vector b = bit_vector(16, 0);
+    bit_vector b = bit_vector(500000, 0);
     b[1] = 1;
     for (size_t i = 0; i < b.size(); i++) {
         b[i] = 1;
     }
     rank_support_v<1> b_rank(&b);
-    // cout << b << " b_rank: " << b_rank(2) << endl;
-    // cout << size_in_mega_bytes(b) << endl;
 
     NaiveRankSupport nrs = NaiveRankSupport(&b);
     uint64_t index = 8000;
     auto r = nrs.rank1(index);
 
-    cout << "NRS rank for " << index << " is " << r << endl;
 
-//    uint64_t d1 = 32;
-//    uint64_t d2 = 57;
-//    uint64_t d3 = 5;
-//    bit_vector bv = {1, 1, 1, 1, 1, 1, 1};
     cout << endl << "****************" << endl;
     bit_vector bv1 = {1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0};
     bit_vector bv2 = {1,0,1,1,0,1,0,1,0,0,1,1,0,0,1,1};
@@ -143,79 +148,15 @@ int main()
     RankSupport rs3 = RankSupport(&bv3);
     RankSupport rs4 = RankSupport(&bv4);
 
-    string fname = "rs1.rs";
-
-    //rs1.save(fname);
-    //rs2.load(fname);
-
     SelectSupport ss1 = SelectSupport(&rs1);
     SelectSupport ss2 = SelectSupport(&rs2);
     SelectSupport ss3 = SelectSupport(&rs3);
     SelectSupport ss4 = SelectSupport(&rs4);
 
-    fname = "ss1.rs";
 
-    ss1.save(fname);
-    ss2.load(fname);
-
-    int select_value = 3;
-    cout << ss1.select1(select_value) << " " << ss2.select1(select_value)  << endl;
-
-//    for (uint64_t c = 1; c < 10; c++) {
-//        time_t start_time;
-//        bit_vector b = bit_vector(10000 * c, 0);
-//        for (size_t i = 0; i < b.size(); i += 100) {
-//            b[i] = 1;
-//        }
-//        RankSupport rs = RankSupport(&b);
-//        time(&start_time);
-//        rs.rank1(5000);
-//        cout <<  time(NULL) - start_time << " seconds for c=" << c << endl;
-//        cout << rs.overhead() << endl;
-//    }
-//    SelectSupport ss1 = SelectSupport(&rs1);
-//    cout << ss1.select1(3) << endl;
-//
-//    SparseArray sa;
-//    sa.create(10);
-//    sa.append("foo", 1);
-//    sa.append("bar", 5);
-//    sa.append("baz", 9);
-//
-//    string e;
-//    cout << sa.get_at_rank(1, e) << " e: " << e <<  endl;
-//    e = "";
-//    cout << sa.get_at_index(3, e) << " e: " << e <<  endl;
-//    e = "";
-//    cout << sa.get_at_index(5, e) << " e: " << e <<  endl;
-//    cout << sa.size() << endl;
-
-    //store_to_file(bv1, "sdb.sdsl");
-    //store_to_file(bv2, "sdb.sdsl");
-
-//    cout << bv1 << endl;
-//    cout << bv2 << endl;
-//
-//    bit_vector five_zeros = bit_vector(5, 0), five_ones = bit_vector(5, 1);
-//    vector<bit_vector> v;
-//    v.push_back(five_zeros);
-//    v.push_back(five_ones);
-//
-//    //store_to_file(v, "sdb.sdsl");
-//    store_to_file(bit_vector(5, 0), "sdb.sdsl");
-//    store_to_file(bit_vector(5, 1), "sdb.sdsl");
-//    bit_vector from_file;
-//    load_vector_from_file(from_file, "sdb.sdsl", 1);
-//
-//    cout << "from_file:" << from_file << endl;
-//
-//    bit_vector big = bit_vector(20000, 1);
-//    RankSupport big_rs(&big);
-//    SelectSupport big_ss(&big_rs);
-//    for (int i = 1; i < 50; i++) {
-//        big_ss.select1(i);
-//    }
-    // rank_select_experiments('S');
-    // sparse_array_experiments();
+    //rank_select_experiments('S');
+    sparse_array_experiments(0.01);
+    sparse_array_experiments(0.05);
+    sparse_array_experiments(0.1);
 
 }
