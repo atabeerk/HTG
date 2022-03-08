@@ -11,6 +11,7 @@
 class SparseArray {
     public:
         SparseArray();
+        SparseArray(bit_vector b, vector<string> v);
         void create(uint64_t size);
         void append(string elem, uint64_t pos);
         bool get_at_rank(uint64_t r, string& elem);

@@ -10,7 +10,6 @@
 using namespace std::chrono;
 
 void sparse_array_experiments(double sparsity) {
-    SparseArray sa;
     cout << "sparsity: " << sparsity << endl;
     vector<duration<double, std::milli>> get_rank_times;
     vector<duration<double, std::milli>> get_index_times;
@@ -18,14 +17,14 @@ void sparse_array_experiments(double sparsity) {
     for (uint64_t i = 1; i < 11; i++) {
         /* Create a sparse array with different size and sparsity each time */
         uint64_t size = 100000 * i;
-        sa.create(size);
+        bit_vector b = bit_vector(size, 0);
+        vector<string> v;
         cout << "starting experiments for size: " << size << endl;
         for (uint64_t j = 0; j < size; j +=  1 / sparsity) {
-//            if ( j % 10000 == 0) {
-//                cout << j << endl;
-//            }
-            sa.append("foo", j);
+            b[j] = 1;
+            v.push_back("foo");
         }
+        SparseArray sa = SparseArray(b, v);
         string s;
 
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -139,7 +138,7 @@ int main()
 
     cout << endl << "****************" << endl;
     bit_vector bv1 = {1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0};
-    bit_vector bv2 = {1,0,1,1,0,1,0,1,0,0,1,1,0,0,1,1};
+    bit_vector bv2 = {1,0,1,1,0,1,1,0};
     bit_vector bv3 = {1,1,0,0,1,1,0,0,1,1,1,0,1,1,0,1,0,0,0,1,1,1,0,1,0,1,0,0,1,0,1,0};
     bit_vector bv4 = {1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0 ,1 ,0};
 
@@ -154,9 +153,12 @@ int main()
     SelectSupport ss4 = SelectSupport(&rs4);
 
 
-    //rank_select_experiments('S');
-    sparse_array_experiments(0.01);
-    sparse_array_experiments(0.05);
-    sparse_array_experiments(0.1);
+//    rank_select_experiments('S');
+//    sparse_array_experiments(0.01);
+//    sparse_array_experiments(0.05);
+//    sparse_array_experiments(0.1);
+
+    string s;
+    cout << sizeof(s) << endl;
 
 }

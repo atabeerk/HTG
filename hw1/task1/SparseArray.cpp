@@ -4,6 +4,14 @@ SparseArray::SparseArray() {
 
 }
 
+SparseArray::SparseArray(bit_vector b, vector<string> v) {
+    sparse_bitvector = b;
+    values = v;
+    // add one for good measure :)
+    sparse_bitvector[sparse_bitvector.size() - 1] = 0;
+    append("foo", sparse_bitvector.size());
+}
+
 
 void SparseArray::create(uint64_t size) {
     sparse_bitvector = bit_vector(size, 0);
