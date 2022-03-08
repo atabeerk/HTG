@@ -84,11 +84,30 @@ uint64_t SparseArray::num_elem() {
 
 void SparseArray::save(string& fname) {
     return;
+
+    /* Using the serialize function to something like this:: */
+//    std::ofstream ofs(fname);
+//    oost::archive::text_oarchive oa(ofs);
+//    oa << (*this);
 }
 
+/* a serialize function would do something similar to the following: */
+//template<class Archive>
+//void SparseArray::serialize(Archive & ar, const unsigned int version) {
+//    ar & sparse_bitvector
+//    ar & values;
+//    ar & rs;
+//}
 
 void SparseArray::load(string& fname) {
     return;
+
+    /* Using serialize function do something like this: */
+//    std::ifstream ifs(fname);
+//    boost::archive::text_iarchive ia(ifs);
+//    ia >> this;
+
+
 }
 
 
