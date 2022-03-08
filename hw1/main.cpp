@@ -158,7 +158,4 @@ int main()
 //    sparse_array_experiments(0.05);
 //    sparse_array_experiments(0.1);
 
-    string s;
-    cout << sizeof(s) << endl;
-
 }

@@ -1,7 +1,6 @@
 #include "NaiveRankSupport.hpp"
 
 NaiveRankSupport::NaiveRankSupport(bit_vector *b) {
-    cout << "in naive rank constructor" << endl;
     this->b = b;
 }
 
