@@ -4,14 +4,10 @@
 
 #include <getopt.h>
 #include <iostream>
-#include <sstream>
-#include <fstream>
 
 #include "SuffixArray.hpp"
 #include "fasta/fasta.h"
 
-
-#include <cereal/archives/xml.hpp>
 
 using namespace std;
 
@@ -52,53 +48,40 @@ int main(int argc, char **argv) {
     std::string* inputs = processArgs(argc, argv);
     std::string genome_path = inputs[0];
     std::string output_path = inputs[1];
-    uint64_t prefix_len = std::atoi(inputs[2].c_str());
+    uint32_t k = std::atoi(inputs[2].c_str());
 
     FASTAFILE *ffp;
     char *seq;
     char *name;
     int L;
-    ffp = OpenFASTA("example/ecoli.fa");
+    ffp = OpenFASTA(&genome_path[0]);
 
     ReadFASTA(ffp, &seq, &name, &L);
     printf("name: %s\n", name);
     printf("size: %d\n", L);
     CloseFASTA(ffp);
 
-    SuffixArray sa = SuffixArray(seq, &output_path[0]);
+    SuffixArray myStuff(seq, output_path, k);
+
+
+    cout << "csa.size(): " << myStuff.sa.size() << endl;
+    cout << "csa.sigma : " << myStuff.sa.sigma << endl;
+    //cout << "csa : " << myStuff.sa << endl;
+    cout << extract(myStuff.sa, myStuff.sa.size()-10, myStuff.sa.size()-1) << endl;
+
+    myStuff.save();
+    SuffixArray n;
+    n.load("output");
+    std::cout << n.get_genome().length() << "this was n" << std::endl;
+
+    cout << "csa.size(): " << n.sa.size() << endl;
+    cout << "csa.sigma : " << n.sa.sigma << endl;
+    cout << "csa : " << n.sa << endl;
+    cout << extract(n.sa, n.sa[66], n.sa.size()-1) << endl;
+
     free(seq);
     free(name);
 
-//    sdsl::csa_bitcompressed<> csa;
-//    construct_im(csa, "abaaba", 1);
-//    cout << "csa.size(): " << csa.size() << endl;
-//    cout << "csa.sigma : " << csa.sigma << endl;
-//    cout << csa << endl;  // output CSA
-//    cout << extract(sa.sa, 0, sa.sa.size()-1) << endl;
-
-
-    {
-        {
-            std::ofstream os("output.xml");
-            cereal::XMLOutputArchive oarchive(os); // stream to cout
-
-            SuffixArray myStuff(seq, &output_path[0]);
-
-            oarchive(CEREAL_NVP(myStuff));
-
-        }
-
-        {
-            std::ifstream is("output.xml");
-            cereal::XMLInputArchive archive(is);
-
-            SuffixArray myStuff;
-
-            archive( myStuff ); // NVPs not strictly necessary when loading
-            std::cout << myStuff.x << std::endl;
-            // but could be used (even out of order)
-        }
-    }
 
     return 0;
 

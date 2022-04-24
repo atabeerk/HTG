@@ -7,29 +7,41 @@
 #define SUFFIXARRAY_H
 
 #include <string>
+#include <unordered_map>
+
 #include <sdsl/suffix_arrays.hpp>
 #include "cereal/archives/binary.hpp"
-#include "cereal/types/memory.hpp"
-
+#include <cereal/types/vector.hpp>
+#include "cereal/types/unordered_map.hpp"
+#include <cereal/types/string.hpp>
 
 class SuffixArray {
 
 public:
     SuffixArray();
-    SuffixArray(char* genome, char* output);
-    friend class cereal::access;
+    SuffixArray(std::string genome, std::string output, uint32_t k);
+    SuffixArray(std::string genome, std::string output);
+    void save();
+    void load(std::string filename);
+
+    std::string get_genome();
 
     sdsl::csa_bitcompressed<> sa;
-    std::unique_ptr<char> genome;
-    char* output;
-    int x;
+
 private:
     friend class cereal::access;
+
+    std::string output;
+    std::string genome;
+    uint32_t k; // prefix length
+    std::unordered_map<std::string, std::vector<uint32_t>> pt;
+
+    void generate_pt();
 
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( x, genome );
+        ar(genome, output, pt);
     }
 };
 
