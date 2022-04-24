@@ -5,8 +5,10 @@
 #include <getopt.h>
 #include <iostream>
 
-#include "SuffixArray.hpp"
 #include "fasta/fasta.h"
+
+#include "SuffixArray.hpp"
+
 
 
 using namespace std;
@@ -56,28 +58,30 @@ int main(int argc, char **argv) {
     int L;
     ffp = OpenFASTA(&genome_path[0]);
 
+    // read the fasta file
     ReadFASTA(ffp, &seq, &name, &L);
     printf("name: %s\n", name);
     printf("size: %d\n", L);
     CloseFASTA(ffp);
 
+    // create a suffix array out of the fasta file
     SuffixArray myStuff(seq, output_path, k);
 
-
+    // test the suffix array
     cout << "csa.size(): " << myStuff.sa.size() << endl;
     cout << "csa.sigma : " << myStuff.sa.sigma << endl;
-    //cout << "csa : " << myStuff.sa << endl;
+    cout << "csa : " << myStuff.sa << endl;
     cout << extract(myStuff.sa, myStuff.sa.size()-10, myStuff.sa.size()-1) << endl;
 
+    // test the prefix table
+    myStuff.print_pt();
+
+    // test save/load
     myStuff.save();
     SuffixArray n;
     n.load("output");
     std::cout << n.get_genome().length() << "this was n" << std::endl;
-
-    cout << "csa.size(): " << n.sa.size() << endl;
-    cout << "csa.sigma : " << n.sa.sigma << endl;
-    cout << "csa : " << n.sa << endl;
-    cout << extract(n.sa, n.sa[66], n.sa.size()-1) << endl;
+    n.print_pt();
 
     free(seq);
     free(name);

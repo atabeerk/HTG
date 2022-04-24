@@ -2,9 +2,11 @@
 // Created by Ataberk Dönmez on 22.04.2022.
 //
 
-#include "SuffixArray.hpp"
+
 #include <iostream>
 #include <memory>
+
+#include "SuffixArray.hpp"
 
 SuffixArray::SuffixArray() {
 
@@ -40,7 +42,7 @@ void SuffixArray::generate_pt() {
         // get the suffix (extract) and then get the prefix(substr)
         std::string curr_prefix = extract(sa, sa[i], sa.size() - 1).substr(0, k);
 
-        // starting from the current suffix keep going left as long as the prefixes are the same
+        // starting from the prev suffix keep going left as long as the prefixes are the same
         uint32_t j = i;
         while (j >= 0) {
             // compare prefix of the current suffix with the previous ones
@@ -49,7 +51,36 @@ void SuffixArray::generate_pt() {
             }
             j--;
         }
-        std::cout << "i:" << i <<" j:" << j << std::endl;
+        // j stores the index of the first non equal prefix when going left, add 1 to get the last equal in the left.
+        j += 1;
+        // vector that stores the starting and end indices of range with the same prefix
+        std::vector<uint32_t> equal_prefix_range;
+        equal_prefix_range.push_back(j);
+
+        j = i;
+        while (j < sa.size()) {
+            // compare prefix of the current suffix with the previous ones
+            if (curr_prefix.compare(extract(sa, sa[j], sa.size() - 1).substr(0, k)) != 0) {
+                break;
+            }
+            j++;
+        }
+        // j stores the index of the first non equal prefix when going right, subtract 1 to get the last equal in the right.
+        j -= 1;
+        equal_prefix_range.push_back(j);
+        pt[curr_prefix] = equal_prefix_range;
+    }
+}
+
+
+void SuffixArray::print_pt() {
+    for (uint32_t i = 1; i < sa.size(); i++) {
+        std::string curr_prefix = extract(sa, sa[i], sa.size() - 1).substr(0, k);
+        std::cout << "i:" << i << " start:" << pt[curr_prefix][0] << " end:" << pt[curr_prefix][1] << std::endl;
+        std::cout << "current suffix: " << extract(sa, sa[i], sa.size() - 1) << std::endl;
+        std::cout << "first suffix with equal prefix " << extract(sa, sa[pt[curr_prefix][0]], sa.size() - 1) << std::endl;
+        std::cout << "last suffix with equal prefix " << extract(sa, sa[pt[curr_prefix][1]], sa.size() - 1) << std::endl;
+        std::cout << "-------------" << std::endl;
     }
 }
 

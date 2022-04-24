@@ -21,9 +21,9 @@ public:
     SuffixArray();
     SuffixArray(std::string genome, std::string output, uint32_t k);
     SuffixArray(std::string genome, std::string output);
+    void print_pt();
     void save();
     void load(std::string filename);
-
     std::string get_genome();
 
     sdsl::csa_bitcompressed<> sa;
@@ -31,17 +31,17 @@ public:
 private:
     friend class cereal::access;
 
-    std::string output;
+    void generate_pt();
+
+    std::string output; // output file prefix (without the extension)
     std::string genome;
     uint32_t k; // prefix length
-    std::unordered_map<std::string, std::vector<uint32_t>> pt;
-
-    void generate_pt();
+    std::unordered_map<std::string, std::vector<uint32_t>> pt; //prefix table
 
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar(genome, output, pt);
+        ar(genome, output, pt, k);
     }
 };
 
