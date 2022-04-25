@@ -1,5 +1,5 @@
 //
-// Created by Ataberk Dönmez on 22.04.2022.
+// Created by Ataberk Donmez on 22.04.2022.
 //
 
 #include <getopt.h>
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     // test the suffix array
     cout << "csa.size(): " << myStuff.sa.size() << endl;
     cout << "csa.sigma : " << myStuff.sa.sigma << endl;
-    cout << "csa : " << myStuff.sa << endl;
+    // cout << "csa : " << myStuff.sa << endl;
     cout << extract(myStuff.sa, myStuff.sa.size()-10, myStuff.sa.size()-1) << endl;
 
     // test the prefix table
@@ -85,6 +85,10 @@ int main(int argc, char **argv) {
     cout << n.get_suffix(66) << endl;
     cout << n.get_suffix(0) << endl;
     cout << n.get_suffix(1) << endl;
+    string s1 = "TTGCTAACACTGAACCAAAGAACAGA";
+    string s2 = "TTGATATCCATGATCACCAGGTTGATGTCATATTCAGAGAGGATCTGATGCATTTCCGCGCCATCTGTCGCTTCGAAAACATCATAGCCTTCCGCTTCGAAAATACTTACTTTACCGATATCATCGCCGCTGTGCGGAGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGT";
+    cout << s1.compare(s2.substr(0, s1.length())) << endl;
+    cout << n.get_search_range("AAASS")[1] << endl;
 
 
     free(seq);

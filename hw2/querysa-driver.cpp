@@ -71,14 +71,33 @@ int main(int argc, char** argv) {
     char *name;
     int L;
     ffp = OpenFASTA(&query_path[0]);
+    querysa q;
     while (ReadFASTA(ffp, &seq, &name, &L)) {
-        printf("name: %s\n", name);
-        printf("size: %d\n", L);
+        //printf("name: %s\n", name);
+        //printf("size: %d\n", L);
+        std::vector<uint32_t> occ;
+        bool r = q.query(sa_object, seq, query_mode, output_path, occ);
+        if (!r) {
+            std::cout << "not found " << seq << std::endl;
+        }
+        else {
+            int count = occ[1] - occ[0] + 1;
+            std::cout << "count:" << count << " ";
+            for (int i = occ[0]; i <= occ[1]; i++) {
+                std::cout << sa_object.sa[i] << " ";
+            }
+            std::cout << std::endl;
+        }
         // process the queries based on the algorithm actual functions are in
     }
     CloseFASTA(ffp);
 
-
-
+    std::cout << sa_object.sa.size() << std::endl;
+//    for (int i = 0; i < sa_object.sa.size(); i++) {
+//        int cmp = sa_object.get_suffix(i).compare(seq);
+//        if (cmp == 0) {
+//            std::cout << " found " << std::endl;
+//        }
+//    }
 }
 

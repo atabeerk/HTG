@@ -1,5 +1,5 @@
 //
-// Created by Ataberk Dönmez on 24.04.2022.
+// Created by Ataberk Donmez on 24.04.2022.
 //
 
 #ifndef HTG_QUERYSA_H
@@ -10,7 +10,10 @@
 class querysa {
 public:
     querysa();
-    void query(SuffixArray sa_object, std::string queries, std::string query_mode, std::string output);
+    bool query(SuffixArray sa_object, std::string query, std::string query_mode, std::string output, std::vector <uint32_t>& occ);
+
+private:
+    int naive_search(SuffixArray sa_object, std::string query, uint32_t left, uint32_t right, std::string order);
 };
 
 

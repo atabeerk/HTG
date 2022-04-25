@@ -25,19 +25,21 @@ public:
     void save();
     void load(std::string filename);
     std::string get_genome();
+    std::vector<uint32_t> get_search_range(std::string prefix);
     std::string get_suffix(uint32_t i);
 
     sdsl::csa_bitcompressed<> sa;
+    std::unordered_map<std::string, std::vector<uint32_t>> pt; //prefix table
 
 private:
     friend class cereal::access;
 
     void generate_pt();
+    bool compare(std::string curr_prefix, uint32_t start);
 
     std::string output; // output file prefix (without the extension)
     std::string genome;
     uint32_t k; // prefix length
-    std::unordered_map<std::string, std::vector<uint32_t>> pt; //prefix table
 
     template <class Archive>
     void serialize( Archive & ar )

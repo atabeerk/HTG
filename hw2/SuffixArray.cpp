@@ -1,5 +1,5 @@
 //
-// Created by Ataberk Dönmez on 22.04.2022.
+// Created by Ataberk Donmez on 22.04.2022.
 //
 
 
@@ -19,13 +19,6 @@ SuffixArray::SuffixArray(std::string genome, std::string output, uint32_t k) {
     this->genome = genome;
     this->k = k;
 
-    std::vector<uint32_t> v;
-    v.push_back(5);
-    v.push_back(10);
-    for (int i = 0; i < genome.length(); i++) {
-        pt["asd"] = v;
-    }
-
     if (k != 0) {
         generate_pt();
     }
@@ -39,6 +32,7 @@ void SuffixArray::generate_pt() {
     // has the same prefix and store this information (start and end index of suffixes with this prefix)
     // in the pt
     for (uint32_t i = 1; i < sa.size(); i++) {
+        std::cout << "at suffix:" << i << std::endl;
         // get the suffix (extract) and then get the prefix(substr)
         std::string curr_prefix = extract(sa, sa[i], sa.size() - 1).substr(0, k);
 
@@ -46,7 +40,7 @@ void SuffixArray::generate_pt() {
         uint32_t j = i;
         while (j >= 0) {
             // compare prefix of the current suffix with the previous ones
-            if (curr_prefix.compare(extract(sa, sa[j], sa.size() - 1).substr(0, k)) != 0) {
+            if (!compare(curr_prefix, sa[j])) {
                 break;
             }
             j--;
@@ -60,7 +54,7 @@ void SuffixArray::generate_pt() {
         j = i;
         while (j < sa.size()) {
             // compare prefix of the current suffix with the previous ones
-            if (curr_prefix.compare(extract(sa, sa[j], sa.size() - 1).substr(0, k)) != 0) {
+            if (!compare(curr_prefix, sa[j])) {
                 break;
             }
             j++;
@@ -74,6 +68,12 @@ void SuffixArray::generate_pt() {
 
 
 void SuffixArray::print_pt() {
+    std::cout << "pt size: " << pt.size() << std::endl;
+
+    if (pt.size() == 0) {
+        return;
+    }
+
     for (uint32_t i = 1; i < sa.size(); i++) {
         std::string curr_prefix = extract(sa, sa[i], sa.size() - 1).substr(0, k);
         std::cout << "i:" << i << " start:" << pt[curr_prefix][0] << " end:" << pt[curr_prefix][1] << std::endl;
@@ -93,6 +93,16 @@ std::string SuffixArray::get_suffix(uint32_t i) {
     return extract(sa, sa[i], sa.size() - 1);
 }
 
+std::vector<uint32_t> SuffixArray::get_search_range(std::string query) {
+    // if the prefix is not in pt, return [0, sa.size()]
+    std::string prefix = query.substr(0, k);
+    if (pt.count(prefix) == 0 || k == 0) {
+        std::vector<uint32_t> v = {0, (uint32_t) sa.size() - 1};
+        return v;
+    }
+    return pt[prefix];
+}
+
 void SuffixArray::save() {
     std::ofstream os(output + ".bin");
     cereal::BinaryOutputArchive oarchive(os); // stream to cout
@@ -108,5 +118,17 @@ void SuffixArray::load(std::string filename) {
 
     archive(*this);
     sdsl::load_from_file(sa, output + ".sdsl");
+
+}
+
+bool SuffixArray::compare(std::string curr_prefix, uint32_t start) {
+    //std::cout << curr_prefix << " " << genome.substr(start, k) << std::endl;
+    for (uint32_t i = start; i < start + k; i++) {
+        //std::cout << "-\t-" << i << " " << curr_prefix[i - start]  << " " << genome[i] << std::endl;
+        if( i >= genome.length() || curr_prefix[i - start] != genome[i]) {
+            return false;
+        }
+    }
+    return true;
 
 }
