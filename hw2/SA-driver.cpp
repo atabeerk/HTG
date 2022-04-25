@@ -82,6 +82,10 @@ int main(int argc, char **argv) {
     n.load("output");
     std::cout << n.get_genome().length() << "this was n" << std::endl;
     n.print_pt();
+    cout << n.get_suffix(66) << endl;
+    cout << n.get_suffix(0) << endl;
+    cout << n.get_suffix(1) << endl;
+
 
     free(seq);
     free(name);

@@ -89,6 +89,10 @@ std::string SuffixArray::get_genome() {
     return genome;
 }
 
+std::string SuffixArray::get_suffix(uint32_t i) {
+    return extract(sa, sa[i], sa.size() - 1);
+}
+
 void SuffixArray::save() {
     std::ofstream os(output + ".bin");
     cereal::BinaryOutputArchive oarchive(os); // stream to cout

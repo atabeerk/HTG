@@ -25,6 +25,7 @@ public:
     void save();
     void load(std::string filename);
     std::string get_genome();
+    std::string get_suffix(uint32_t i);
 
     sdsl::csa_bitcompressed<> sa;
 
