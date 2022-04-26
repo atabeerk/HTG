@@ -30,6 +30,7 @@ public:
 
     sdsl::csa_bitcompressed<> sa;
     std::unordered_map<std::string, std::vector<uint32_t>> pt; //prefix table
+    std::string genome;
 
 private:
     friend class cereal::access;
@@ -37,7 +38,6 @@ private:
     void generate_pt();
 
     std::string output; // output file prefix (without the extension)
-    std::string genome;
     uint32_t k; // prefix length
 
     template <class Archive>

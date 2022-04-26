@@ -93,7 +93,7 @@ std::vector<uint32_t> SuffixArray::get_search_range(std::string query) {
 
 void SuffixArray::save() {
     std::ofstream os(output + ".bin");
-    cereal::BinaryOutputArchive oarchive(os); // stream to cout
+    cereal::BinaryOutputArchive oarchive(os);
 
     oarchive(CEREAL_NVP(*this));
     sdsl::store_to_file(sa, output + ".sdsl");

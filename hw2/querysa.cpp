@@ -11,19 +11,22 @@ bool querysa::query(SuffixArray sa_object, std::string query, std::string query_
                     std::vector <uint32_t>& occ) {
     uint32_t left = sa_object.get_search_range(query)[0];
     uint32_t right = sa_object.get_search_range(query)[1];
-    std::cout << "initial left and right: " << left << " " << right << std::endl;
     int first, last;
     if (query_mode.compare("naive") == 0) {
         // these are sa indices, need to do sa[first] to get index at the actual string
         first = naive_search(sa_object, query, left, right, "first");
         if (first == -1) {
             // shortcut, no need to look for the last one if it doesn't exist!
+            occ.push_back(0);
+            occ.push_back(0);
             return false;
         }
         last = naive_search(sa_object, query, left, right, "last");
     } else {
         first = simple_accel(sa_object, query, left, right, 0, 0, "first");
         if (first == -1) {
+            occ.push_back(0);
+            occ.push_back(0);
             return false;
         }
         last = simple_accel(sa_object, query, left, right, 0, 0, "last");
@@ -37,13 +40,13 @@ bool querysa::query(SuffixArray sa_object, std::string query, std::string query_
 
 int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t left, uint32_t right, std::string order) {
     int center = (right + left) / 2;
-    // std::cout << "left, center, right:" << left << " " << center << " " << right << std::endl;
     if (right < left) {
         return -1;
     }
-    std::string suffix = sa_object.get_suffix(center);
+    // std::string suffix = sa_object.get_suffix(center); // this was the root of all evil
+    uint32_t suffix_start = sa_object.sa[center];
     // starting from the beginning of the both strings, compare query.length() chars
-    int cmp = query.compare(0, query.length(), suffix, 0, query.length());
+    int cmp = query.compare(0, query.length(), sa_object.genome, suffix_start, query.length());
     if (cmp == 0) {
         if (order.compare("first") == 0) {
             // found a matching suffix but is it the first matching suffix?
@@ -53,9 +56,9 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
             }
 
             // if the query is not a prefix of the previous suffix than it must be the first suffix
-            std::string prev_suffix = sa_object.get_suffix(center - 1);
-            int cmp_prev_suffix = query.compare(0, query.length(), prev_suffix, 0,
-                                                query.length());
+            // std::string prev_suffix = sa_object.get_suffix(center - 1);
+            uint32_t prev_start = sa_object.sa[center - 1];
+            int cmp_prev_suffix = query.compare(0, query.length(), sa_object.genome, prev_start, query.length());
             if (cmp_prev_suffix != 0) {
                 return center;
             } else {
@@ -70,9 +73,9 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
             }
 
             // if the query is not a prefix of the next suffix than it must be the last suffix
-            std::string next_suffix = sa_object.get_suffix(center + 1);
-            int cmp_next_suffix = query.compare(0, query.length(), next_suffix, 0,
-                                                query.length());
+            // std::string next_suffix = sa_object.get_suffix(center + 1);
+            uint32_t next_start = sa_object.sa[center + 1];
+            int cmp_next_suffix = query.compare(0, query.length(), sa_object.genome, next_start, query.length());
             if (cmp_next_suffix != 0) {
                 return center;
             } else {
@@ -92,15 +95,15 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
 int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t left, uint32_t right, uint32_t left_lcp,
                           uint32_t right_lcp, std::string order) {
     int center = (right + left) / 2;
-    // std::cout << "left, center, right:" << left << " " << center << " " << right << std::endl;
     if (right < left) {
         return -1;
     }
-    std::string suffix = sa_object.get_suffix(center);
+    // std::string suffix = sa_object.get_suffix(center);
+    uint32_t suffix_start = sa_object.sa[center];
     uint32_t min_lcp = (left_lcp < right_lcp) ? left_lcp : right_lcp;
-    int cmp = query.compare(min_lcp, query.length() - min_lcp, suffix, min_lcp,
+    int cmp = query.compare(min_lcp, query.length() - min_lcp, sa_object.genome, suffix_start + min_lcp,
                             query.length() - min_lcp);
-    uint32_t curr_lcp = lcp(query, suffix);
+    uint32_t curr_lcp = lcp(query, sa_object.genome, suffix_start);
     if (cmp == 0) {
         if (order.compare("first") == 0) {
             // found a matching suffix but is it the first matching suffix?
@@ -110,9 +113,10 @@ int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t lef
             }
 
             // if the query is not a prefix of the previous suffix than it must be the first suffix
-            std::string prev_suffix = sa_object.get_suffix(center - 1);
-            int cmp_prev_suffix = query.compare(min_lcp, query.length() - min_lcp, prev_suffix,
-                                                min_lcp, query.length() - min_lcp);
+            // std::string prev_suffix = sa_object.get_suffix(center - 1);
+            uint32_t prev_start = sa_object.sa[center - 1];
+            int cmp_prev_suffix = query.compare(min_lcp, query.length() - min_lcp, sa_object.genome,
+                                                prev_start + min_lcp,query.length() - min_lcp);
             if (cmp_prev_suffix != 0) {
                 return center;
             } else {
@@ -127,9 +131,10 @@ int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t lef
             }
 
             // if the query is not a prefix of the next suffix than it must be the last suffix
-            std::string next_suffix = sa_object.get_suffix(center + 1);
-            int cmp_next_suffix = query.compare(min_lcp, query.length() - min_lcp,
-                                                next_suffix, min_lcp, query.length() - min_lcp);
+            // std::string next_suffix = sa_object.get_suffix(center + 1);
+            uint32_t next_start = sa_object.sa[center + 1];
+            int cmp_next_suffix = query.compare(min_lcp, query.length() - min_lcp, sa_object.genome,
+                                                next_start + min_lcp,query.length() - min_lcp);
             if (cmp_next_suffix != 0) {
                 return center;
             } else {
@@ -149,10 +154,10 @@ int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t lef
 }
 
 
-uint32_t querysa::lcp(std::string query, std::string suffix) {
+uint32_t querysa::lcp(std::string query, std::string genome, uint32_t suffix_start) {
     uint32_t counter = 0;
     for (uint32_t i = 0; i < query.length(); i++) {
-        if (query[i] == suffix[i]) {
+        if (query[i] == genome[suffix_start + i]) {
             counter++;
         } else {
             return counter;

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <ctime>
 #include <getopt.h>
+#include <fstream>
 
 #include "fasta/fasta.h"
 
@@ -74,6 +75,8 @@ int main(int argc, char** argv) {
     ffp = OpenFASTA(&query_path[0]);
     querysa q;
     std::vector<std::chrono::duration<double, std::milli>> naive_times;
+    std::ofstream naive_output;
+    naive_output.open("naive_output.txt");
     while (ReadFASTA(ffp, &seq, &name, &L)) {
         //printf("name: %s\n", name);
         //printf("size: %d\n", L);
@@ -83,26 +86,30 @@ int main(int argc, char** argv) {
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> diff = t2 - t1;
         naive_times.push_back(diff);
-        std::cout << "naive time: " << diff.count() << std::endl;
         if (!r) {
-            std::cout << "not found " << seq << std::endl;
+            naive_output << name << "\t" << "0" << std::endl;
         } else {
             int count = occ[1] - occ[0] + 1;
-            std::cout << "count:" << count << " ";
+            naive_output << name << "\t" << count;
             for (int i = occ[0]; i <= occ[1]; i++) {
-                std::cout << sa_object.sa[i] << " ";
+                naive_output << "\t" << sa_object.sa[i];
             }
-            std::cout << std::endl;
+            naive_output << std::endl;
         }
     }
+    naive_output.close();
     double total_time = 0;
     for (auto i : naive_times) {
         total_time += i.count();
     }
     std::cout << "total naive time:" << total_time / 1000 << std::endl;
     CloseFASTA(ffp);
+
+
     ffp = OpenFASTA(&query_path[0]);
     std::vector<std::chrono::duration<double, std::milli>> simpleacc_times;
+    std::ofstream simpleacc_output;
+    simpleacc_output.open("simpleacc_output.txt");
     while (ReadFASTA(ffp, &seq, &name, &L)) {
         //printf("name: %s\n", name);
         //printf("size: %d\n", L);
@@ -112,16 +119,15 @@ int main(int argc, char** argv) {
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> diff = t2 - t1;
         simpleacc_times.push_back(diff);
-        std::cout << "simpleacc time: " << diff.count() << std::endl;
         if (!r) {
-            std::cout << "not found " << seq << std::endl;
+            simpleacc_output << name << "\t" << "0" << std::endl;
         } else {
             int count = occ[1] - occ[0] + 1;
-            std::cout << "count:" << count << " ";
+            simpleacc_output << name << "\t" << count;
             for (int i = occ[0]; i <= occ[1]; i++) {
-                std::cout << sa_object.sa[i] << " ";
+                simpleacc_output << "\t" << sa_object.sa[i];
             }
-            std::cout << std::endl;
+            simpleacc_output << std::endl;
         }
     }
     total_time = 0;

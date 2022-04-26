@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     CloseFASTA(ffp);
 
     // create a suffix array out of the fasta file
-    SuffixArray myStuff(seq, output_path);
+    SuffixArray myStuff(seq, output_path, k);
 
     // test the suffix array
     cout << "csa.size(): " << myStuff.sa.size() << endl;
@@ -86,12 +86,12 @@ int main(int argc, char **argv) {
     cout << n.get_suffix(108925).substr(0, 5) << endl;
     cout << n.get_suffix(108924).substr(0, 5) << endl;
     string s1 = "TTGCTAACACTGAACCAAAGAACAGA";
-    string s2 = "TTGCTAACACTGAACCAAAGAACAGATTGATATCCATGATCACCAGGTTGATGTCATATTCAGAGAGGATCTGATGCATTTCCGCGCCATCTGTCGCTTCGAAAACATCATAGCCTTCCGCTTCGAAAATACTTACTTTACCGATATCATCGCCGCTGTGCGGAGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGT";
+    string s2 = "TTGCTAATCACTGAACCAAAGAACAGATTGCTAACACTGAACCAAAGAACAGATTGATATCCATGATCACCAGGTTGATGTCATATTCAGAGAGGATCTGATGCATTTCCGCGCCATCTGTCGCTTCGAAAACATCATAGCCTTCCGCTTCGAAAATACTTACTTTACCGATATCATCGCCGCTGTGCGGAGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGT";
     string s3 = "TTGCTAACACTGAACCAAAGAACAGA";
     cout << s1.compare(s2.substr(0, s1.length())) << endl;
     cout << n.get_search_range("AAASS")[1] << endl;
     cout << (s1 == s3) << endl;
-    cout << s1.compare(0, s1.length(), s2) << endl;
+    cout << s1.compare(0, s1.length(), s2, s1.length() + 1, s1.length()) << endl;
 
 
     free(seq);
