@@ -107,21 +107,3 @@ void SuffixArray::load(std::string filename) {
     archive(*this);
     sdsl::load_from_file(sa, output + ".sdsl");
 }
-
-
-bool SuffixArray::compare(std::string curr_prefix, uint32_t start) {
-    //std::cout << curr_prefix << " " << genome.substr(start, k) << std::endl;
-    try {
-        return 0 == curr_prefix.compare(start, k, genome);
-    }
-    catch (const std::out_of_range& oor) {
-        return false;
-    }
-    for (uint32_t i = start; i < start + k; i++) {
-        //std::cout << "-\t-" << i << " " << curr_prefix[i - start]  << " " << genome[i] << std::endl;
-        if( i >= genome.length() || curr_prefix[i - start] != genome[i]) {
-            return false;
-        }
-    }
-    return true;
-}

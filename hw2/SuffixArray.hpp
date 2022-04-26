@@ -35,7 +35,6 @@ private:
     friend class cereal::access;
 
     void generate_pt();
-    bool compare(std::string curr_prefix, uint32_t start);
 
     std::string output; // output file prefix (without the extension)
     std::string genome;
