@@ -31,41 +31,24 @@ void SuffixArray::generate_pt() {
     // for each suffix, look at its k-len prefix, figure out how many suffixes before or after that
     // has the same prefix and store this information (start and end index of suffixes with this prefix)
     // in the pt
-    for (uint32_t i = 1; i < sa.size(); i++) {
-        if (i % 20 == 0) {
-            std::cout << i << std::endl;
+    uint32_t i = 1;
+    // init curr_prefix to the prefix of the first suffix
+    std::string curr_prefix = extract(sa, sa[i], sa.size() - 1).substr(0, k);
+    uint32_t start = 1;
+    while (i < sa.size()) {
+        // check if there is a mismatch
+        if (curr_prefix.compare(0, k, genome, sa[i], k)) {
+            // if there is a mismatch, insert the curr_prefix into the pt and update the curr_prefix
+            std::vector<uint32_t> equal_prefix_range = {start, i - 1};
+            pt[curr_prefix] = equal_prefix_range;
+            curr_prefix = extract(sa, sa[i], sa.size() - 1).substr(0, k);
+            start = i;
         }
-        // get the suffix (extract) and then get the prefix(substr)
-        std::string curr_prefix = extract(sa, sa[i], sa.size() - 1).substr(0, k);
-
-        // starting from the prev suffix keep going left as long as the prefixes are the same
-        int j = i;
-        while (j >= 0) {
-            // compare prefix of the current suffix with the previous ones
-            if (curr_prefix.compare(0, k, genome, sa[j], k) != 0) {
-                break;
-            }
-            j--;
-        }
-        // j stores the index of the first non equal prefix when going left, add 1 to get the last equal in the left.
-        j += 1;
-        // vector that stores the starting and end indices of range with the same prefix
-        std::vector<uint32_t> equal_prefix_range;
-        equal_prefix_range.push_back(j);
-
-        j = i;
-        while (j < sa.size()) {
-            // compare prefix of the current suffix with the previous ones
-            if (curr_prefix.compare(0, k, genome, sa[j], k) != 0) {
-                break;
-            }
-            j++;
-        }
-        // j stores the index of the first non equal prefix when going right, subtract 1 to get the last equal in the right.
-        j -= 1;
-        equal_prefix_range.push_back(j);
-        pt[curr_prefix] = equal_prefix_range;
+        i++;
     }
+    // handle the last one
+    std::vector<uint32_t> equal_prefix_range = {start, i};
+    pt[curr_prefix] = equal_prefix_range;
 }
 
 
@@ -123,7 +106,6 @@ void SuffixArray::load(std::string filename) {
 
     archive(*this);
     sdsl::load_from_file(sa, output + ".sdsl");
-
 }
 
 

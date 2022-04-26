@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     CloseFASTA(ffp);
 
     // create a suffix array out of the fasta file
-    SuffixArray myStuff(seq, output_path, k);
+    SuffixArray myStuff(seq, output_path);
 
     // test the suffix array
     cout << "csa.size(): " << myStuff.sa.size() << endl;
@@ -74,17 +74,17 @@ int main(int argc, char **argv) {
     cout << extract(myStuff.sa, myStuff.sa.size()-10, myStuff.sa.size()-1) << endl;
 
     // test the prefix table
-    myStuff.print_pt();
+    //myStuff.print_pt();
 
     // test save/load
     myStuff.save();
     SuffixArray n;
     n.load("output");
     std::cout << n.get_genome().length() << "this was n" << std::endl;
-    n.print_pt();
-    cout << n.get_suffix(66) << endl;
-    cout << n.get_suffix(0) << endl;
-    cout << n.get_suffix(1) << endl;
+    //n.print_pt();
+    //cout << n.get_suffix(66) << endl;
+    cout << n.get_suffix(108925).substr(0, 5) << endl;
+    cout << n.get_suffix(108924).substr(0, 5) << endl;
     string s1 = "TTGCTAACACTGAACCAAAGAACAGA";
     string s2 = "TTGCTAACACTGAACCAAAGAACAGATTGATATCCATGATCACCAGGTTGATGTCATATTCAGAGAGGATCTGATGCATTTCCGCGCCATCTGTCGCTTCGAAAACATCATAGCCTTCCGCTTCGAAAATACTTACTTTACCGATATCATCGCCGCTGTGCGGAGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGT";
     string s3 = "TTGCTAACACTGAACCAAAGAACAGA";

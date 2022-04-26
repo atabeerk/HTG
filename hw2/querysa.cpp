@@ -11,11 +11,13 @@ bool querysa::query(SuffixArray sa_object, std::string query, std::string query_
                     std::vector <uint32_t>& occ) {
     uint32_t left = sa_object.get_search_range(query)[0];
     uint32_t right = sa_object.get_search_range(query)[1];
+    std::cout << "initial left and right: " << left << " " << right << std::endl;
     int first, last;
     if (query_mode.compare("naive") == 0) {
         // these are sa indices, need to do sa[first] to get index at the actual string
         first = naive_search(sa_object, query, left, right, "first");
         if (first == -1) {
+            // shortcut, no need to look for the last one if it doesn't exist!
             return false;
         }
         last = naive_search(sa_object, query, left, right, "last");
@@ -52,7 +54,8 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
 
             // if the query is not a prefix of the previous suffix than it must be the first suffix
             std::string prev_suffix = sa_object.get_suffix(center - 1);
-            int cmp_prev_suffix = query.compare(prev_suffix.substr(0, query.length()));
+            int cmp_prev_suffix = query.compare(0, query.length(), prev_suffix, 0,
+                                                query.length());
             if (cmp_prev_suffix != 0) {
                 return center;
             } else {
@@ -68,7 +71,8 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
 
             // if the query is not a prefix of the next suffix than it must be the last suffix
             std::string next_suffix = sa_object.get_suffix(center + 1);
-            int cmp_next_suffix = query.compare(next_suffix.substr(0, query.length()));
+            int cmp_next_suffix = query.compare(0, query.length(), next_suffix, 0,
+                                                query.length());
             if (cmp_next_suffix != 0) {
                 return center;
             } else {
