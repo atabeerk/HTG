@@ -6,9 +6,14 @@
 
 querysa::querysa() {}
 
-
+/*
+ * Query entry point. Based on the query_mode delegates to either naive_search() or simple_accel()
+ * returns true if the query exists in the sa_object.genome. The start and end indices of the all occurrences in
+ * the sa_object.sa is put into the occ out parameter.
+ * */
 bool querysa::query(SuffixArray sa_object, std::string query, std::string query_mode, std::string output,
                     std::vector <uint32_t>& occ) {
+    // if there is no pt, the following values are 0 and sa_object.sa.size() respectively
     uint32_t left = sa_object.get_search_range(query)[0];
     uint32_t right = sa_object.get_search_range(query)[1];
     int first, last;
@@ -38,12 +43,15 @@ bool querysa::query(SuffixArray sa_object, std::string query, std::string query_
     }
 }
 
+
+/*
+ * Naive, modified binary search. Depending on the order parameter finds either the first or last occurrence of query
+ * */
 int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t left, uint32_t right, std::string order) {
     int center = (right + left) / 2;
     if (right < left) {
         return -1;
     }
-    // std::string suffix = sa_object.get_suffix(center); // this was the root of all evil
     uint32_t suffix_start = sa_object.sa[center];
     // starting from the beginning of the both strings, compare query.length() chars
     int cmp = query.compare(0, query.length(), sa_object.genome, suffix_start, query.length());
@@ -56,7 +64,6 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
             }
 
             // if the query is not a prefix of the previous suffix than it must be the first suffix
-            // std::string prev_suffix = sa_object.get_suffix(center - 1);
             uint32_t prev_start = sa_object.sa[center - 1];
             int cmp_prev_suffix = query.compare(0, query.length(), sa_object.genome, prev_start, query.length());
             if (cmp_prev_suffix != 0) {
@@ -73,7 +80,6 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
             }
 
             // if the query is not a prefix of the next suffix than it must be the last suffix
-            // std::string next_suffix = sa_object.get_suffix(center + 1);
             uint32_t next_start = sa_object.sa[center + 1];
             int cmp_next_suffix = query.compare(0, query.length(), sa_object.genome, next_start, query.length());
             if (cmp_next_suffix != 0) {
@@ -92,15 +98,22 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
     }
 }
 
+
+/*
+ * Improved version of the naive algorithm. Skips the first n common characters of left and right for comparison.
+ * Sometimes slower than the naive due to the extra function call for computing longest common prefix.
+ * */
 int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t left, uint32_t right, uint32_t left_lcp,
                           uint32_t right_lcp, std::string order) {
     int center = (right + left) / 2;
     if (right < left) {
         return -1;
     }
-    // std::string suffix = sa_object.get_suffix(center);
     uint32_t suffix_start = sa_object.sa[center];
     uint32_t min_lcp = (left_lcp < right_lcp) ? left_lcp : right_lcp;
+
+    // Would be nice to have a function that compares and returns the length of the lcp simultaneously
+    // So I wouldn't have to make the following two calls separately
     int cmp = query.compare(min_lcp, query.length() - min_lcp, sa_object.genome, suffix_start + min_lcp,
                             query.length() - min_lcp);
     uint32_t curr_lcp = lcp(query, sa_object.genome, suffix_start);
@@ -113,7 +126,6 @@ int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t lef
             }
 
             // if the query is not a prefix of the previous suffix than it must be the first suffix
-            // std::string prev_suffix = sa_object.get_suffix(center - 1);
             uint32_t prev_start = sa_object.sa[center - 1];
             int cmp_prev_suffix = query.compare(min_lcp, query.length() - min_lcp, sa_object.genome,
                                                 prev_start + min_lcp,query.length() - min_lcp);
@@ -131,7 +143,6 @@ int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t lef
             }
 
             // if the query is not a prefix of the next suffix than it must be the last suffix
-            // std::string next_suffix = sa_object.get_suffix(center + 1);
             uint32_t next_start = sa_object.sa[center + 1];
             int cmp_next_suffix = query.compare(min_lcp, query.length() - min_lcp, sa_object.genome,
                                                 next_start + min_lcp,query.length() - min_lcp);
@@ -154,6 +165,12 @@ int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t lef
 }
 
 
+/*
+ * Longest common prefix used in simple_accel algorithm. Ideally, a function could return both the comparison and the
+ * length of the lcp of two strings. But instead of implementing a function that does both, I use str.compare() for
+ * comparison and this one for length of lcp. If I were using a function that does both, the naive one would be slower
+ * (because I don't see myself implementing a faster string comparison than std).
+ * */
 uint32_t querysa::lcp(std::string query, std::string genome, uint32_t suffix_start) {
     uint32_t counter = 0;
     for (uint32_t i = 0; i < query.length(); i++) {

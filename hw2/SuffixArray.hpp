@@ -24,12 +24,11 @@ public:
     void print_pt();
     void save();
     void load(std::string filename);
-    std::string get_genome();
     std::vector<uint32_t> get_search_range(std::string prefix);
     std::string get_suffix(uint32_t i);
 
     sdsl::csa_bitcompressed<> sa;
-    std::unordered_map<std::string, std::vector<uint32_t>> pt; //prefix table
+    std::unordered_map<std::string, std::vector<uint32_t>> pt; // {prefix: [start, end]}
     std::string genome;
 
 private:
@@ -43,6 +42,7 @@ private:
     template <class Archive>
     void serialize( Archive & ar )
     {
+        // sa is saved on its own with a different method
         ar(genome, output, pt, k);
     }
 };
