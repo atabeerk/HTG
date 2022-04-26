@@ -2,8 +2,9 @@
 // Created by Ataberk Donmez on 24.04.2022.
 //
 
-#include <getopt.h>
 #include <iostream>
+#include <ctime>
+#include <getopt.h>
 
 #include "fasta/fasta.h"
 
@@ -72,15 +73,20 @@ int main(int argc, char** argv) {
     int L;
     ffp = OpenFASTA(&query_path[0]);
     querysa q;
+    std::vector<std::chrono::duration<double, std::milli>> naive_times;
     while (ReadFASTA(ffp, &seq, &name, &L)) {
         //printf("name: %s\n", name);
         //printf("size: %d\n", L);
         std::vector<uint32_t> occ;
-        bool r = q.query(sa_object, seq, query_mode, output_path, occ);
+        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();;
+        bool r = q.query(sa_object, seq, "naive", output_path, occ);
+        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> diff = t2 - t1;
+        naive_times.push_back(diff);
+        std::cout << "naive time: " << diff.count() << std::endl;
         if (!r) {
             std::cout << "not found " << seq << std::endl;
-        }
-        else {
+        } else {
             int count = occ[1] - occ[0] + 1;
             std::cout << "count:" << count << " ";
             for (int i = occ[0]; i <= occ[1]; i++) {
@@ -88,16 +94,42 @@ int main(int argc, char** argv) {
             }
             std::cout << std::endl;
         }
-        // process the queries based on the algorithm actual functions are in
     }
+    double total_time = 0;
+    for (auto i : naive_times) {
+        total_time += i.count();
+    }
+    std::cout << "total naive time:" << total_time / 1000 << std::endl;
+    CloseFASTA(ffp);
+    ffp = OpenFASTA(&query_path[0]);
+    std::vector<std::chrono::duration<double, std::milli>> simpleacc_times;
+    while (ReadFASTA(ffp, &seq, &name, &L)) {
+        //printf("name: %s\n", name);
+        //printf("size: %d\n", L);
+        std::vector<uint32_t> occ;
+        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();;
+        bool r = q.query(sa_object, seq, "simpleacc", output_path, occ);
+        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> diff = t2 - t1;
+        simpleacc_times.push_back(diff);
+        std::cout << "simpleacc time: " << diff.count() << std::endl;
+        if (!r) {
+            std::cout << "not found " << seq << std::endl;
+        } else {
+            int count = occ[1] - occ[0] + 1;
+            std::cout << "count:" << count << " ";
+            for (int i = occ[0]; i <= occ[1]; i++) {
+                std::cout << sa_object.sa[i] << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    total_time = 0;
+    for (auto i : simpleacc_times) {
+        total_time += i.count();
+    }
+    std::cout << "total simpleacc time:" << total_time / 1000 << std::endl;
     CloseFASTA(ffp);
 
-    std::cout << sa_object.sa.size() << std::endl;
-//    for (int i = 0; i < sa_object.sa.size(); i++) {
-//        int cmp = sa_object.get_suffix(i).compare(seq);
-//        if (cmp == 0) {
-//            std::cout << " found " << std::endl;
-//        }
-//    }
 }
 
