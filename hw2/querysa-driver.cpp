@@ -34,19 +34,15 @@ std::string* processArgs(int argc, char** argv) {
 
         switch (opt) {
             case 'i':
-                std::cout << optarg << std::endl;
                 inputs[0] = optarg;
                 break;
             case 'q':
-                std::cout << optarg << std::endl;
                 inputs[1] = optarg;
                 break;
             case 'm':
-                std::cout << optarg << std::endl;
                 inputs[2] = optarg;
                 break;
             case 'o':
-                std::cout << optarg << std::endl;
                 inputs[3] = optarg;
                 break;
         }
@@ -75,67 +71,43 @@ int main(int argc, char** argv) {
     ffp = OpenFASTA(&query_path[0]);
     querysa q;
     std::vector<std::chrono::duration<double, std::milli>> naive_times;
-    std::ofstream naive_output;
-    naive_output.open("naive_output.txt");
+    std::map<std::string, std::string> output_strings;
     while (ReadFASTA(ffp, &seq, &name, &L)) {
         //printf("name: %s\n", name);
         //printf("size: %d\n", L);
         std::vector<uint32_t> occ;
         std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();;
-        bool r = q.query(sa_object, seq, "naive", output_path, occ);
+        bool r = q.query(sa_object, seq, query_mode, occ);
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> diff = t2 - t1;
         naive_times.push_back(diff);
+        std::string name_str = name;
         if (!r) {
-            naive_output << name << "\t" << "0" << std::endl;
+            output_strings[name] = name_str + "\t" + "0" + "\n";
         } else {
             int count = occ[1] - occ[0] + 1;
-            naive_output << name << "\t" << count;
+            std::string tmp = name_str + "\t" + std::to_string(count);
             for (int i = occ[0]; i <= occ[1]; i++) {
-                naive_output << "\t" << sa_object.sa[i];
+                tmp += "\t" + std::to_string(sa_object.sa[i]);
             }
-            naive_output << std::endl;
+            tmp += "\n";
+            output_strings[name] = tmp;
         }
     }
-    naive_output.close();
+    CloseFASTA(ffp);
+    // Write the results to a file
+    std::ofstream output_file;
+    output_file.open(output_path);
     double total_time = 0;
     for (auto i : naive_times) {
         total_time += i.count();
     }
-    std::cout << "total naive time:" << total_time / 1000 << std::endl;
-    CloseFASTA(ffp);
-
-
-    ffp = OpenFASTA(&query_path[0]);
-    std::vector<std::chrono::duration<double, std::milli>> simpleacc_times;
-    std::ofstream simpleacc_output;
-    simpleacc_output.open("simpleacc_output.txt");
-    while (ReadFASTA(ffp, &seq, &name, &L)) {
-        //printf("name: %s\n", name);
-        //printf("size: %d\n", L);
-        std::vector<uint32_t> occ;
-        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();;
-        bool r = q.query(sa_object, seq, "simpleacc", output_path, occ);
-        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> diff = t2 - t1;
-        simpleacc_times.push_back(diff);
-        if (!r) {
-            simpleacc_output << name << "\t" << "0" << std::endl;
-        } else {
-            int count = occ[1] - occ[0] + 1;
-            simpleacc_output << name << "\t" << count;
-            for (int i = occ[0]; i <= occ[1]; i++) {
-                simpleacc_output << "\t" << sa_object.sa[i];
-            }
-            simpleacc_output << std::endl;
-        }
+    output_file << query_mode << total_time << std::endl;
+    for (auto i = output_strings.begin(); i != output_strings.end(); i++) {
+        output_file << i->second;
     }
-    total_time = 0;
-    for (auto i : simpleacc_times) {
-        total_time += i.count();
-    }
-    std::cout << "total simpleacc time:" << total_time / 1000 << std::endl;
-    CloseFASTA(ffp);
+    output_file.close();
+    std::cout << total_time << std::endl;
 
 }
 

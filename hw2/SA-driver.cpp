@@ -30,11 +30,9 @@ std::string* processArgs(int argc, char** argv) {
 
         switch (opt) {
             case 'p':
-                std::cout << optarg << std::endl;
                 inputs[2] = optarg;
                 break;
             case 1:
-                printf("Non-option arg: %s\n", optarg);
                 if (inputs[0] == "")
                     inputs[0] = optarg;
                 else
@@ -50,7 +48,8 @@ int main(int argc, char **argv) {
     std::string* inputs = processArgs(argc, argv);
     std::string genome_path = inputs[0];
     std::string output_path = inputs[1];
-    uint32_t k = std::atoi(inputs[2].c_str());
+    uint32_t k = 0;
+    k = std::atoi(inputs[2].c_str());
 
     FASTAFILE *ffp;
     char *seq;
@@ -60,42 +59,38 @@ int main(int argc, char **argv) {
 
     // read the fasta file
     ReadFASTA(ffp, &seq, &name, &L);
-    printf("name: %s\n", name);
-    printf("size: %d\n", L);
+    //printf("name: %s\n", name);
+    //printf("size: %d\n", L);
     CloseFASTA(ffp);
 
     // create a suffix array out of the fasta file
-    SuffixArray myStuff(seq, output_path, k);
-
-    // test the suffix array
-    cout << "csa.size(): " << myStuff.sa.size() << endl;
-    cout << "csa.sigma : " << myStuff.sa.sigma << endl;
-    // cout << "csa : " << myStuff.sa << endl;
-    cout << extract(myStuff.sa, myStuff.sa.size()-10, myStuff.sa.size()-1) << endl;
-
-    // test the prefix table
-    //myStuff.print_pt();
-
-    // test save/load
-    myStuff.save();
-    SuffixArray n;
-    n.load("output");
-    std::cout << n.get_genome().length() << "this was n" << std::endl;
-    //n.print_pt();
-    //cout << n.get_suffix(66) << endl;
-    cout << n.get_suffix(108925).substr(0, 5) << endl;
-    cout << n.get_suffix(108924).substr(0, 5) << endl;
-    string s1 = "TTGCTAACACTGAACCAAAGAACAGA";
-    string s2 = "TTGCTAATCACTGAACCAAAGAACAGATTGCTAACACTGAACCAAAGAACAGATTGATATCCATGATCACCAGGTTGATGTCATATTCAGAGAGGATCTGATGCATTTCCGCGCCATCTGTCGCTTCGAAAACATCATAGCCTTCCGCTTCGAAAATACTTACTTTACCGATATCATCGCCGCTGTGCGGAGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGT";
-    string s3 = "TTGCTAACACTGAACCAAAGAACAGA";
-    cout << s1.compare(s2.substr(0, s1.length())) << endl;
-    cout << n.get_search_range("AAASS")[1] << endl;
-    cout << (s1 == s3) << endl;
-    cout << s1.compare(0, s1.length(), s2, s1.length() + 1, s1.length()) << endl;
-
-
+    SuffixArray sa_object(seq, output_path, k);
     free(seq);
     free(name);
+
+//    test the suffix array
+//    cout << "csa.size(): " << sa_object.sa.size() << endl;
+//    cout << "csa.sigma : " << sa_object.sa.sigma << endl;
+//    cout << "csa : " << sa_object.sa << endl;
+//    cout << extract(sa_object.sa, sa_object.sa.size()-10, sa_object.sa.size()-1) << endl;
+
+    sa_object.save();
+
+//    test the prefix table
+//    sa_object.print_pt();
+//    for (auto i = sa_object.pt.begin(); i != sa_object.pt.end(); i++) {
+//        std::cout << i->first << std::endl;
+//    }
+
+//     test save/load
+//    sa_object.save();
+//    SuffixArray n;
+//    n.load("output");
+//    std::cout << n.get_genome().length() << "this was n" << std::endl;
+//    n.print_pt();
+
+
+
 
 
     return 0;

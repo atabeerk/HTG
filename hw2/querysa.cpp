@@ -2,7 +2,9 @@
 // Created by Ataberk Donmez on 24.04.2022.
 //
 
+#include <ctime>
 #include "querysa.hpp"
+
 
 querysa::querysa() {}
 
@@ -11,8 +13,7 @@ querysa::querysa() {}
  * returns true if the query exists in the sa_object.genome. The start and end indices of the all occurrences in
  * the sa_object.sa is put into the occ out parameter.
  * */
-bool querysa::query(SuffixArray sa_object, std::string query, std::string query_mode, std::string output,
-                    std::vector <uint32_t>& occ) {
+bool querysa::query(SuffixArray& sa_object, std::string query, std::string query_mode, std::vector <uint32_t>& occ) {
     // if there is no pt, the following values are 0 and sa_object.sa.size() respectively
     uint32_t left = sa_object.get_search_range(query)[0];
     uint32_t right = sa_object.get_search_range(query)[1];
@@ -47,7 +48,7 @@ bool querysa::query(SuffixArray sa_object, std::string query, std::string query_
 /*
  * Naive, modified binary search. Depending on the order parameter finds either the first or last occurrence of query
  * */
-int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t left, uint32_t right, std::string order) {
+int querysa::naive_search(SuffixArray& sa_object, std::string query, uint32_t left, uint32_t right, std::string order) {
     int center = (right + left) / 2;
     if (right < left) {
         return -1;
@@ -103,7 +104,7 @@ int querysa::naive_search(SuffixArray sa_object, std::string query, uint32_t lef
  * Improved version of the naive algorithm. Skips the first n common characters of left and right for comparison.
  * Sometimes slower than the naive due to the extra function call for computing longest common prefix.
  * */
-int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t left, uint32_t right, uint32_t left_lcp,
+int querysa::simple_accel(SuffixArray& sa_object, std::string query, uint32_t left, uint32_t right, uint32_t left_lcp,
                           uint32_t right_lcp, std::string order) {
     int center = (right + left) / 2;
     if (right < left) {
@@ -112,8 +113,8 @@ int querysa::simple_accel(SuffixArray sa_object, std::string query, uint32_t lef
     uint32_t suffix_start = sa_object.sa[center];
     uint32_t min_lcp = (left_lcp < right_lcp) ? left_lcp : right_lcp;
 
-    // Would be nice to have a function that compares and returns the length of the lcp simultaneously
-    // So I wouldn't have to make the following two calls separately
+    // Would be nice to have a function that both compares and returns the length of the lcp simultaneously
+    // so I wouldn't have to make the following two calls separately
     int cmp = query.compare(min_lcp, query.length() - min_lcp, sa_object.genome, suffix_start + min_lcp,
                             query.length() - min_lcp);
     uint32_t curr_lcp = lcp(query, sa_object.genome, suffix_start);
