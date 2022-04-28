@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
     for (auto i : naive_times) {
         total_time += i.count();
     }
-    output_file << query_mode << total_time << std::endl;
+    output_file << total_time << std::endl;
     for (auto i = output_strings.begin(); i != output_strings.end(); i++) {
         output_file << i->second;
     }

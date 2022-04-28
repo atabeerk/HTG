@@ -172,7 +172,7 @@ int querysa::simple_accel(SuffixArray& sa_object, std::string query, uint32_t le
  * comparison and this one for length of lcp. If I were using a function that does both, the naive one would be slower
  * (because I don't see myself implementing a faster string comparison than std).
  * */
-uint32_t querysa::lcp(std::string query, std::string genome, uint32_t suffix_start) {
+uint32_t querysa::lcp(std::string query, std::string& genome, uint32_t suffix_start) {
     uint32_t counter = 0;
     for (uint32_t i = 0; i < query.length(); i++) {
         if (query[i] == genome[suffix_start + i]) {
